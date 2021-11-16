@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  rewards:
+    build:
+      context: .
+    volumes:
+      - .:/app
+      - ./.docker/db/:/db/
+    restart: unless-stopped
+    command: python rewards/main.py
+ 

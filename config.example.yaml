@@ -1,0 +1,9 @@
+json_rpc:
+multisender_contract_address: '0xB841F784aF27637aD32a68fC78B58D0407747b2b'
+gas_price_gwei: 80
+private_key: 
+reward_per_percent: 0.00000000001
+reward_min_percent: 50
+rewards_hour: 14
+enodes:
+  - 59862cb6391b625b21e1251d72a408c72af316901692317b1a0e1c0e6f90c77ec451669f2ad1c6046c65b04f373581b816b3cc5bf3ca7da06786dd904075e5a7
