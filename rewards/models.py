@@ -2,7 +2,7 @@ import logging
 from tortoise.models import Model
 from tortoise import fields
 from enum import Enum
-from rewards.settings import config
+from rewards.settings import config, MULTISENDER_INITIAL_GAS, MULTISENDER_GAS_ADDITION_PER_ADDRESS
 from web3 import Web3
 from tortoise.transactions import atomic, in_transaction
 from web3.exceptions import TransactionNotFound
@@ -67,7 +67,7 @@ class Airdrop(Model):
         amounts = [int(reward.amount) for reward in rewards]
 
         total_amount = sum(amounts)
-        gas_limit = 300_000
+        gas_limit = MULTISENDER_INITIAL_GAS + MULTISENDER_GAS_ADDITION_PER_ADDRESS * len(amounts)
         gas_price = config.gas_price_gwei * (10 ** 9)
 
         if config.w3.eth.get_balance(config.address) < total_amount + (gas_limit * gas_price):
