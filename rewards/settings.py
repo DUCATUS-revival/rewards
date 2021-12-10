@@ -16,13 +16,19 @@ logging.basicConfig(
 logging.getLogger('apscheduler.executors.default').propagate = False
 
 
-SQLITE_URL = "sqlite:///db/db.sqlite3"
+POSTGRES_URL = 'postgres://{user}:{password}@{hostname}:{port}/{db}'.format(
+    user=os.getenv('POSTGRES_USER', 'rewards'),
+    password=os.getenv('POSTGRES_PASSWORD', 'rewards'),
+    hostname=os.getenv('POSTGRES_HOST', '127.0.0.1'),
+    db=os.getenv('POSTGRES_DB', 'rewards'),
+    port=os.getenv('POSTGRES_PORT', 5432),
+)
 
 MODELS_MODULE = "rewards.models"
 
 TORTOISE_ORM = {
     "connections": {
-        "default": SQLITE_URL,
+        "default": POSTGRES_URL,
     },
     "apps": {
         "models": {

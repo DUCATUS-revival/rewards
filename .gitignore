@@ -1,4 +1,5 @@
 .docker
+.env
 venv
 __pycache__
 config.yaml

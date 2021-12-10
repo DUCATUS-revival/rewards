@@ -6,13 +6,13 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 sys.path.append(os.path.abspath(os.path.join(__file__, *[os.pardir] * 2)))
 
-from rewards.settings import SQLITE_URL, MODELS_MODULE, config
+from rewards.settings import POSTGRES_URL, MODELS_MODULE, config
 from rewards.tasks import ping_nodes, send_rewards, check_pending_airdrops, check_waiting_airdrops
 
 
 
 async def init_db():
-    await Tortoise.init(db_url=SQLITE_URL, modules={"models": [MODELS_MODULE]})
+    await Tortoise.init(db_url=POSTGRES_URL, modules={"models": [MODELS_MODULE]})
     await Tortoise.generate_schemas()
 
 

@@ -4,9 +4,17 @@ services:
   rewards:
     build:
       context: .
+    env_file: .env
+    depends_on:
+      - db
     volumes:
       - .:/app
       - ./.docker/db/:/db/
     restart: unless-stopped
     command: python rewards/main.py
- 
+  db:
+    image: postgres:14.1
+    env_file: .env
+    volumes:
+      - ./.docker/postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
