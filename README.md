@@ -15,3 +15,8 @@ make run
 make shell
 ```
 
+## Generate keys
+
+```bash
+python generate_keys 100
+```

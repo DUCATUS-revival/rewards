@@ -3,3 +3,7 @@
 venv
 __pycache__
 config.yaml
+mnemonics*
+keys*
+pubkeys*
+privkeys*
