@@ -18,5 +18,5 @@ make shell
 ## Generate keys
 
 ```bash
-python generate_keys 100
+python generate_keys.py 100
 ```
