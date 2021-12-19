@@ -19,9 +19,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('n', metavar='N', type=int, help='priv keys number')
 
 args = parser.parse_args()
-priv_keys = []
-pub_keys = []
 date = datetime.now().strftime("%Y-%m-%d-%H.%M.%S")
+
 for i in range(args.n):
     mnemonic = generate_mnemonic(language="english", strength=128)
     bip44_hdwallet = BIP44HDWallet(cryptocurrency=DucatusXMainnet, account=0, change=False, address=0)
@@ -33,7 +32,7 @@ for i in range(args.n):
     pub_key = str(priv_key.public_key)
     
     with open(f'privkeys-{date}.txt', 'a') as f:
-        f.write(priv_key_hexstr[2:] + '\n')
+        f.write(priv_key_hexstr + '\n')
 
     with open(f'mnemonics-{date}.txt', 'a') as f:
         f.write(mnemonic + '\n')
@@ -42,5 +41,5 @@ for i in range(args.n):
         f.write(pub_key[2:] + '\n')
 
     with open(f'keys-{date}.csv', 'a') as f:
-        to_write = ','.join([mnemonic, priv_key_hexstr[2:], pub_key[2:]])
+        to_write = ','.join([mnemonic, priv_key_hexstr, pub_key[2:], bip44_hdwallet.address()])
         f.write(to_write + '\n')
