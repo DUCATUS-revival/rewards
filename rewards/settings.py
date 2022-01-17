@@ -1,27 +1,25 @@
-import os
-import yaml
 import json
 import logging
+import os
 from dataclasses import dataclass, field
-from marshmallow_dataclass import class_schema
-from web3 import Web3, HTTPProvider, contract
-from eth_account import Account
 from typing import Set
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s: %(message)s'
-)
+import yaml
+from eth_account import Account
+from marshmallow_dataclass import class_schema
+from web3 import HTTPProvider, Web3, contract
 
-logging.getLogger('apscheduler.executors.default').propagate = False
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+
+logging.getLogger("apscheduler.executors.default").propagate = False
 
 
-POSTGRES_URL = 'postgres://{user}:{password}@{hostname}:{port}/{db}'.format(
-    user=os.getenv('POSTGRES_USER', 'rewards'),
-    password=os.getenv('POSTGRES_PASSWORD', 'rewards'),
-    hostname=os.getenv('POSTGRES_HOST', '127.0.0.1'),
-    db=os.getenv('POSTGRES_DB', 'rewards'),
-    port=os.getenv('POSTGRES_PORT', 5432),
+POSTGRES_URL = "postgres://{user}:{password}@{hostname}:{port}/{db}".format(
+    user=os.getenv("POSTGRES_USER", "rewards"),
+    password=os.getenv("POSTGRES_PASSWORD", "rewards"),
+    hostname=os.getenv("POSTGRES_HOST", "127.0.0.1"),
+    db=os.getenv("POSTGRES_DB", "rewards"),
+    port=os.getenv("POSTGRES_PORT", 5432),
 )
 
 MODELS_MODULE = "rewards.models"
@@ -31,10 +29,7 @@ TORTOISE_ORM = {
         "default": POSTGRES_URL,
     },
     "apps": {
-        "models": {
-            "models": [MODELS_MODULE], 
-            "default_connection": "default"
-        },
+        "models": {"models": [MODELS_MODULE], "default_connection": "default"},
     },
 }
 
@@ -59,16 +54,20 @@ class Config:
 
     def __post_init__(self):
         self.w3 = Web3(HTTPProvider(self.json_rpc))
-        multisender_contract_address_checksum = Web3.toChecksumAddress(self.multisender_contract_address)
-        self.multisender_contract = self.w3.eth.contract(address=multisender_contract_address_checksum, abi=MULTISENDER_ABI)
+        multisender_contract_address_checksum = Web3.toChecksumAddress(
+            self.multisender_contract_address
+        )
+        self.multisender_contract = self.w3.eth.contract(
+            address=multisender_contract_address_checksum, abi=MULTISENDER_ABI
+        )
         self.address = Account.from_key(self.private_key).address
-            
 
-with open('rewards/multisender_abi.json') as f:
+
+with open("rewards/multisender_abi.json") as f:
     MULTISENDER_ABI = json.load(f)
 
 
-with open(os.path.dirname(__file__) + '/../config.yaml') as f:
+with open(os.path.dirname(__file__) + "/../config.yaml") as f:
     config_data = yaml.safe_load(f)
-    
+
 config: Config = class_schema(Config)().load(config_data)
