@@ -1,0 +1,13 @@
+[flake8]
+exclude = .git, .docker, __pycache__, venv
+ignore = 
+    E251,
+    E501,
+    E402,
+    W291,
+    W293,
+    W503,
+    F405,
+    E128,
+    E122,
+    E126,
