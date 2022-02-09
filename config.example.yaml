@@ -5,4 +5,5 @@ private_key:
 reward_per_percent: 0.00000000001
 reward_min_percent: 50
 rewards_hour: 14
+ping_nodes_interval_munutes: 5
 enodes_dir: enodes

@@ -48,6 +48,7 @@ class Config:
     private_key: str
     reward_per_percent: float
     reward_min_percent: int
+    ping_nodes_interval_munutes: int
     rewards_hour: int
     enodes_dir: str
     enodes: Set[str] = field(init=False)

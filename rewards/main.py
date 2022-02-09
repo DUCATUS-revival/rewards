@@ -26,7 +26,9 @@ if __name__ == "__main__":
     try:
         loop.run_until_complete(init_db())
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(ping_nodes, "interval", minutes=1)
+        scheduler.add_job(
+            ping_nodes, "interval", minutes=config.ping_nodes_interval_munutes
+        )
         scheduler.add_job(check_waiting_airdrops, "interval", minutes=1)
         scheduler.add_job(check_pending_airdrops, "interval", seconds=5)
         scheduler.add_job(send_rewards, "cron", hour=config.rewards_hour)
