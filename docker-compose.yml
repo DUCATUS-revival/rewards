@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  rewards:
+  main:
     build:
       context: .
     env_file: .env
