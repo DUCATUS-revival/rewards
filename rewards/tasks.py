@@ -23,7 +23,7 @@ async def ping_nodes() -> None:
 
     headers = {"Content-Type": "application/json"}
 
-    result = requests.post(config.json_rpc, json=payload, headers=headers)
+    result = requests.post(config.json_rpc, json=payload, headers=headers, timeout=30)
 
     peers = result.json()["result"]["peers"]
     active_enodes = set()
