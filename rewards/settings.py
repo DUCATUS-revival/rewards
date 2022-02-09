@@ -1,3 +1,4 @@
+import glob
 import json
 import logging
 import os
@@ -48,11 +49,18 @@ class Config:
     reward_per_percent: float
     reward_min_percent: int
     rewards_hour: int
+    enodes_dir: str
+    enodes: Set[str] = field(init=False)
     w3: Web3 = field(init=False)
     multisender_contract: contract = field(init=False)
     address: str = field(init=False)
 
     def __post_init__(self):
+        enodes_tmp = []
+        for filename in glob.glob(os.path.join(self.enodes_dir, "*.txt")):
+            enodes_tmp += [line.strip() for line in open(filename)]
+
+        self.enodes = set(enodes_tmp)
         self.w3 = Web3(HTTPProvider(self.json_rpc))
         multisender_contract_address_checksum = Web3.toChecksumAddress(
             self.multisender_contract_address
