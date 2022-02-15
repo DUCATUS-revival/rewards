@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Set
+from typing import List, Set
 
 import yaml
 from eth_account import Account
@@ -41,7 +41,7 @@ MULTISENDER_GAS_ADDITION_PER_ADDRESS = 40_000
 
 @dataclass
 class Config:
-    json_rpc: str
+    json_rpc_urls: List[str]
     enodes: Set[str]
     multisender_contract_address: str
     gas_price_gwei: int
@@ -62,7 +62,7 @@ class Config:
             enodes_tmp += [line.strip() for line in open(filename)]
 
         self.enodes = set(enodes_tmp)
-        self.w3 = Web3(HTTPProvider(self.json_rpc))
+        self.w3 = Web3(HTTPProvider(self.json_rpc_urls))
         multisender_contract_address_checksum = Web3.toChecksumAddress(
             self.multisender_contract_address
         )

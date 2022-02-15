@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-import requests
 from tortoise.transactions import atomic
 from web3 import Web3
 
@@ -14,22 +13,11 @@ class AirdropException(Exception):
 
 
 async def ping_nodes() -> None:
-    payload = {
-        "method": "parity_netPeers",
-        "params": [],
-        "id": 1,
-        "jsonrpc": "2.0",
-    }
-
-    headers = {"Content-Type": "application/json"}
-
-    result = requests.post(config.json_rpc, json=payload, headers=headers, timeout=30)
-
-    peers = result.json()["result"]["peers"]
+    res = config.w3.parity.net_peers()
     active_enodes = set()
-    for peer in peers:
-        if peer["protocols"]["eth"]:
-            active_enodes.add(peer["id"])
+    for peer in res.peers:
+        if peer.protocols.eth:
+            active_enodes.add(peer.id)
 
     logging.info("active nodes: {}".format("\n".join(active_enodes)))
 
