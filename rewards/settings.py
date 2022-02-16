@@ -49,6 +49,8 @@ class Config:
     reward_per_percent: float
     reward_min_percent: int
     ping_nodes_interval_munutes: int
+    ping_nodes_max_retries: int
+    ping_nodes_retries_timeout_secs: int
     rewards_hour: int
     enodes_dir: str
     enodes: Set[str] = field(init=False)

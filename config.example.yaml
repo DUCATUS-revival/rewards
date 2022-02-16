@@ -6,4 +6,6 @@ reward_per_percent: 0.00000000001
 reward_min_percent: 50
 rewards_hour: 14
 ping_nodes_interval_munutes: 5
+ping_nodes_max_retries: 10
+ping_nodes_retries_timeout_secs: 5
 enodes_dir: enodes
