@@ -31,7 +31,9 @@ if __name__ == "__main__":
         )
         scheduler.add_job(check_waiting_airdrops, "interval", minutes=1)
         scheduler.add_job(check_pending_airdrops, "interval", seconds=5)
-        scheduler.add_job(send_rewards, "cron", hour=config.rewards_hour)
+        scheduler.add_job(
+            send_rewards, "cron", hour=config.rewards_hour, misfire_grace_time=15 * 60
+        )
         scheduler.start()
         loop.run_forever()
     finally:
