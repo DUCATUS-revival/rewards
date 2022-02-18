@@ -98,6 +98,9 @@ class Airdrop(Model):
             "gas": gas_limit,
             "value": total_amount,
         }
+        logging.info(
+            f"ready to send rewards addresses={addresses} amounts={amounts} with tx params {tx_params}"
+        )
         func = config.multisender_contract.functions.multisendETH(addresses, amounts)
         initial_tx = func.buildTransaction(tx_params)
         signed_tx = config.w3.eth.account.sign_transaction(
