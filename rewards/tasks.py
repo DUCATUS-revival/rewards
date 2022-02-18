@@ -31,6 +31,7 @@ async def ping_nodes() -> None:
 
         session.mount("http://", adapter)
         session.mount("https://", adapter)
+
         res = session.post(
             json_rpc,
             json=payload,
@@ -70,16 +71,17 @@ async def create_airdrop() -> Airdrop:
     for enode in config.enodes:
         peer, _ = await Peer.get_or_create(enode=enode)
 
-        healthchecks = peer.healthchecks.all()
+        apoch_start = datetime.now() - timedelta(days=1)
+
+        healthchecks = peer.healthchecks.filter(
+            timestamp__gte=apoch_start,
+        )
         healthchecks_count = await healthchecks.count()
         if healthchecks_count == 0:
             continue
 
-        apoch_start = datetime.now() - timedelta(days=1)
-
-        success_checks = await peer.healthchecks.filter(
+        success_checks = await healthchecks.filter(
             online=True,
-            timestamp__gte=apoch_start,
         ).count()
         online_percent = int(success_checks * 100 / healthchecks_count)
         logging.info(f"{peer.enode} online percent is {online_percent}%")
