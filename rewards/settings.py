@@ -18,15 +18,13 @@ logging.config.dictConfig(logger_config)
 logging.getLogger("apscheduler.executors.default").propagate = False
 
 
-# POSTGRES_URL = "postgres://{user}:{password}@{hostname}:{port}/{db}".format(
-#     user=os.getenv("POSTGRES_USER", "rewards"),
-#     password=os.getenv("POSTGRES_PASSWORD", "rewards"),
-#     hostname=os.getenv("POSTGRES_HOST", "127.0.0.1"),
-#     db=os.getenv("POSTGRES_DB", "rewards"),
-#     port=os.getenv("POSTGRES_PORT", 5432),
-# )
-
-POSTGRES_URL = "sqlite://db.sqlite"
+POSTGRES_URL = "postgres://{user}:{password}@{hostname}:{port}/{db}".format(
+    user=os.getenv("POSTGRES_USER", "rewards"),
+    password=os.getenv("POSTGRES_PASSWORD", "rewards"),
+    hostname=os.getenv("POSTGRES_HOST", "127.0.0.1"),
+    db=os.getenv("POSTGRES_DB", "rewards"),
+    port=os.getenv("POSTGRES_PORT", 5432),
+)
 
 MODELS_MODULE = ["rewards.models", "aerich.models"]
 
