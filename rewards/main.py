@@ -17,7 +17,7 @@ from rewards.tasks import (
 
 
 async def init_db():
-    await Tortoise.init(db_url=POSTGRES_URL, modules={"models": [MODELS_MODULE]})
+    await Tortoise.init(db_url=POSTGRES_URL, modules={"models": MODELS_MODULE})
     await Tortoise.generate_schemas()
 
 
@@ -32,7 +32,11 @@ if __name__ == "__main__":
         scheduler.add_job(check_waiting_airdrops, "interval", minutes=1)
         scheduler.add_job(check_pending_airdrops, "interval", seconds=5)
         scheduler.add_job(
-            send_rewards, "cron", hour=config.rewards_hour, misfire_grace_time=15 * 60
+            send_rewards,
+            "cron",
+            hour=config.rewards_hour,
+            misfire_grace_time=15 * 60,
+            minute=10,
         )
         scheduler.start()
         loop.run_forever()
