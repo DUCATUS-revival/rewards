@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import requests
 from requests.adapters import HTTPAdapter
 from tortoise.transactions import atomic
+from tortoise import timezone
 from web3 import Web3
 
 from rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
@@ -53,7 +54,7 @@ async def ping_nodes() -> None:
         )
 
         is_online = enode in active_enodes
-        timestamp = datetime.now() - timedelta(days=1)
+        timestamp = timezone.now() - timedelta(days=1)
         healthcheck_count = await Healthcheck.filter(
             peer=peer, timestamp__gte=timestamp
         ).count()
