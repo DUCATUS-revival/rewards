@@ -84,7 +84,8 @@ class Airdrop(Model):
             MULTISENDER_INITIAL_GAS
             + MULTISENDER_GAS_ADDITION_PER_ADDRESS * len(amounts)
         )
-        gas_price = config.gas_price_gwei * (10**9)
+
+        gas_price = config.gas_price_wei
 
         if config.w3.eth.get_balance(config.address) < total_amount + (
             gas_limit * gas_price
