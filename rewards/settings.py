@@ -1,6 +1,7 @@
+import contextlib
 import glob
 import json
-import logging
+import logging.config
 import os
 from dataclasses import dataclass, field
 from typing import List, Set
@@ -10,8 +11,10 @@ from eth_account import Account
 from marshmallow_dataclass import class_schema
 from web3 import HTTPProvider, Web3, contract
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+from rewards.logger_config import logger_config
+from rewards.rates_api import RatesAPI
 
+logging.config.dictConfig(logger_config)
 logging.getLogger("apscheduler.executors.default").propagate = False
 
 
@@ -23,20 +26,25 @@ POSTGRES_URL = "postgres://{user}:{password}@{hostname}:{port}/{db}".format(
     port=os.getenv("POSTGRES_PORT", 5432),
 )
 
-MODELS_MODULE = "rewards.models"
+MODELS_MODULE = ["rewards.models", "aerich.models"]
 
 TORTOISE_ORM = {
     "connections": {
         "default": POSTGRES_URL,
     },
     "apps": {
-        "models": {"models": [MODELS_MODULE], "default_connection": "default"},
+        "models": {"models": MODELS_MODULE, "default_connection": "default"},
     },
 }
 
 MULTISENDER_INITIAL_GAS = 100_000
-
 MULTISENDER_GAS_ADDITION_PER_ADDRESS = 40_000
+
+
+DECIMALS = {
+    "DUCX": 18,
+    "DUC": 8,
+}
 
 
 @dataclass
@@ -46,6 +54,7 @@ class Config:
     multisender_contract_address: str
     gas_price_wei: int
     private_key: str
+    reward_currency: str
     reward_per_percent: float
     reward_min_percent: int
     ping_nodes_interval_munutes: int
@@ -57,11 +66,17 @@ class Config:
     w3: Web3 = field(init=False)
     multisender_contract: contract = field(init=False)
     address: str = field(init=False)
+    rates_url: str
+    default_usd_reward_amount: float
+    api: RatesAPI = field(init=False)
 
     def __post_init__(self):
         enodes_tmp = []
-        for filename in glob.glob(os.path.join(self.enodes_dir, "*.txt")):
-            enodes_tmp += [line.strip() for line in open(filename)]
+        with contextlib.ExitStack() as stack:
+            for filename in glob.glob(os.path.join(self.enodes_dir, "*.txt")):
+                enodes_tmp += [
+                    line.strip() for line in stack.enter_context(open(filename))
+                ]
 
         self.enodes = set(enodes_tmp)
         self.w3 = Web3(HTTPProvider(self.json_rpc_urls))
@@ -72,6 +87,7 @@ class Config:
             address=multisender_contract_address_checksum, abi=MULTISENDER_ABI
         )
         self.address = Account.from_key(self.private_key).address
+        self.api = RatesAPI(self.rates_url)
 
 
 with open("rewards/multisender_abi.json") as f:

@@ -30,9 +30,11 @@ class Airdrop(Model):
     status = fields.CharEnumField(
         AirdropStatus, default=AirdropStatus.WAITING_FOR_RELAY
     )
-    nonce = fields.IntField(null=True)
-    gas_price = fields.DecimalField(max_digits=100, decimal_places=0, null=True)
-    tx_hash = fields.CharField(max_length=100, default="")
+    nonce = fields.BigIntField(null=True)
+    gas_price = fields.DecimalField(max_digits=32, decimal_places=0, null=True)
+    tx_hash = fields.CharField(max_length=40, default="")
+
+    rewards = fields.ReverseRelation["Reward"]
 
     async def check_relayed_tx(self):
         logging.info("check status")
@@ -82,6 +84,7 @@ class Airdrop(Model):
             MULTISENDER_INITIAL_GAS
             + MULTISENDER_GAS_ADDITION_PER_ADDRESS * len(amounts)
         )
+
         gas_price = config.gas_price_wei
 
         if config.w3.eth.get_balance(config.address) < total_amount + (
@@ -124,9 +127,18 @@ class Reward(Model):
 
 class Peer(Model):
     enode = fields.CharField(pk=True, max_length=128)
+    healthchecks = fields.ReverseRelation["Healthcheck"]
+    reward_interest = fields.DecimalField(default=1, decimal_places=18, max_digits=255)
 
 
 class Healthcheck(Model):
     peer = fields.ForeignKeyField("models.Peer", related_name="healthchecks")
-    online = fields.BooleanField()
     timestamp = fields.DatetimeField(auto_now_add=True)
+    online_counter = fields.IntField(default=0)
+    total_counter = fields.IntField(default=0)
+
+
+class Rate(Model):
+    currency = fields.CharField(max_length=10)
+    usd_rate = fields.DecimalField(decimal_places=8, max_digits=255, default=1)
+    decimals = fields.IntField(default=0)
