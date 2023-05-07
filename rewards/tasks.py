@@ -6,6 +6,7 @@ from requests.adapters import HTTPAdapter
 from tortoise.transactions import atomic
 from tortoise import timezone
 from web3 import Web3
+from eth_keys import keys
 
 from rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
 from rewards.settings import DECIMALS, config
@@ -105,10 +106,9 @@ async def create_airdrop() -> Airdrop:
         logger.info(f"{peer.enode} online percent is {online_percent}%")
 
         if online_percent >= config.reward_min_percent:
-            hex_enode = Web3.toHex(text=enode)
-            public_key_hash = Web3.sha3(hexstr=hex_enode)
-            address = Web3.toHex(public_key_hash[-20:])
-            address_checksum = Web3.toChecksumAddress(address)
+            pub_key_bytes = Web3.toBytes(hexstr=enode)
+            pub_key = keys.PublicKey(pub_key_bytes)
+            address_checksum = pub_key.to_checksum_address()
             amount = await count_reward_amount(peer, online_percent)
             await Reward.create(
                 airdrop=airdrop,

@@ -32,7 +32,7 @@ class Airdrop(Model):
     )
     nonce = fields.BigIntField(null=True)
     gas_price = fields.DecimalField(max_digits=32, decimal_places=0, null=True)
-    tx_hash = fields.CharField(max_length=40, default="")
+    tx_hash = fields.CharField(max_length=100, default="")
 
     rewards = fields.ReverseRelation["Reward"]
 
@@ -92,6 +92,9 @@ class Airdrop(Model):
         ):
             self.status = AirdropStatus.INSUFFICIENT_BALANCE
             await self.save()
+            logging.info(f'balance {config.w3.eth.get_balance(config.address)}')
+            logging.info(f'need to send {total_amount + (gas_limit * gas_price)}')
+            logging.info('relay insuff balance')
             return
 
         nonce = config.w3.eth.getTransactionCount(config.address, "pending")
