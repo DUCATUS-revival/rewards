@@ -1,3 +1,4 @@
+import logging
 from typing import Set
 
 import requests
@@ -7,6 +8,8 @@ from requests.adapters import HTTPAdapter
 from web3 import Web3
 
 from src.settings import config
+
+logger = logging.getLogger("src.utils")
 
 
 async def request_active_enodes() -> Set[str]:
@@ -50,4 +53,5 @@ def valid_enode(enode: str) -> bool:
         _ = pubkey_to_address(enode)
         return True
     except EthUtilsValidationError:
+        logging.warning(f"enode {enode} not valid, remove it from files and DB")
         return False
