@@ -2,6 +2,7 @@ from typing import Set
 
 import requests
 from eth_keys import keys
+from eth_utils.exceptions import ValidationError as EthUtilsValidationError
 from requests.adapters import HTTPAdapter
 from web3 import Web3
 
@@ -42,3 +43,11 @@ def pubkey_to_address(pubkey: str) -> str:
     pub_key_bytes = Web3.toBytes(hexstr=pubkey)
     pub_key = keys.PublicKey(pub_key_bytes)
     return pub_key.to_checksum_address()
+
+
+def valid_enode(enode: str) -> bool:
+    try:
+        _ = pubkey_to_address(enode)
+        return True
+    except EthUtilsValidationError:
+        return False

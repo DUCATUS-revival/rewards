@@ -7,7 +7,7 @@ from tortoise.transactions import atomic
 from src.consts import DECIMALS
 from src.rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
 from src.settings import config
-from src.utils import pubkey_to_address, request_active_enodes
+from src.utils import pubkey_to_address, request_active_enodes, valid_enode
 
 logger = logging.getLogger("src.rewards.tasks")
 
@@ -23,6 +23,9 @@ async def ping_nodes() -> None:
     logger.debug("active nodes: \n{}".format("\n".join(active_enodes)))
 
     for enode in config.enodes:
+        if not valid_enode(enode):
+            continue
+
         peer, _ = await Peer.get_or_create(
             enode=enode,
             defaults={
@@ -63,6 +66,9 @@ async def create_airdrop() -> Airdrop:
     airdrop = await Airdrop.create()
     reward_count = 0
     for enode in config.enodes:
+        if not valid_enode(enode):
+            continue
+
         peer, _ = await Peer.get_or_create(
             enode=enode,
             defaults={
@@ -142,6 +148,9 @@ async def get_and_update_rate(currency: str) -> int:
 async def update_peer_addresses() -> None:
     unset_peers = await Peer.filter(pubkey_address=None).all()
     for peer in unset_peers:
+        if not valid_enode(peer.enode):
+            continue
+
         peer.pubkey_address = pubkey_to_address(peer.enode)
         await peer.save(update_fields=("pubkey_address",))
         logging.info(f"Set address {peer.pubkey_address} for peer {peer.enode}")
