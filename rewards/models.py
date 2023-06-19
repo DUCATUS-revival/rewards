@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from eth_keys import keys
 
 from tortoise import fields
 from tortoise.models import Model
@@ -12,6 +13,7 @@ from rewards.settings import (
     MULTISENDER_INITIAL_GAS,
     config,
 )
+from rewards.utils import request_active_enodes, count_reward_amount, pubkey_to_address
 
 
 class AirdropStatus(str, Enum):
@@ -132,6 +134,41 @@ class Peer(Model):
     enode = fields.CharField(pk=True, max_length=128)
     healthchecks = fields.ReverseRelation["Healthcheck"]
     reward_interest = fields.DecimalField(default=1, decimal_places=18, max_digits=255)
+
+    @property
+    def address(self) -> str:
+        return pubkey_to_address(self.enode)
+
+    async def get_current_online_status(self):
+        active_enodes = await request_active_enodes()
+        if self.enode in active_enodes:
+            return True
+
+        return False
+
+    async def get_latest_healthcheck(self):
+        return await self.healthchecks.order_by("-timestamp").first()
+
+    async def get_current_online_percent(self):
+        latest_healthcheck = await self.get_latest_healthcheck()
+        if not latest_healthcheck:
+            return 0.0
+
+        return round(latest_healthcheck.online_counter * 100 / latest_healthcheck.total_counter, 2)
+
+    async def get_today_expected_rewards(self):
+        current_online_percent = await self.get_current_online_percent()
+        if current_online_percent < config.reward_min_percent:
+            return 0.0
+
+        return count_reward_amount(float(self.reward_interest), current_online_percent)
+
+    async def get_status(self):
+        return {
+            "online_status": self.get_current_online_status(),
+            "online_percent": self.get_current_online_percent(),
+            "expected_rewards": self.get_today_expected_rewards(),
+        }
 
 
 class Healthcheck(Model):

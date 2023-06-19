@@ -1,8 +1,6 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
-import requests
-from requests.adapters import HTTPAdapter
 from tortoise.transactions import atomic
 from tortoise import timezone
 from web3 import Web3
@@ -10,6 +8,7 @@ from eth_keys import keys
 
 from rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
 from rewards.settings import DECIMALS, config
+from rewards.utils import request_active_enodes, count_reward_amount, pubkey_to_address
 
 logger = logging.getLogger("tasks")
 
@@ -19,30 +18,7 @@ class AirdropException(Exception):
 
 
 async def ping_nodes() -> None:
-    payload = {
-        "method": "parity_netPeers",
-        "params": [],
-        "id": 1,
-        "jsonrpc": "2.0",
-    }
-
-    headers = {"Content-Type": "application/json"}
-    adapter = HTTPAdapter(max_retries=config.ping_nodes_max_retries)
-    active_enodes = set()
-    session = requests.Session()
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    for json_rpc in config.json_rpc_urls:
-        res = session.post(
-            json_rpc,
-            json=payload,
-            headers=headers,
-            timeout=config.ping_nodes_retries_timeout_secs,
-        )
-        peers = res.json()["result"]["peers"]
-        for peer in peers:
-            if peer["protocols"]["eth"]:
-                active_enodes.add(peer["id"])
+    active_enodes = await request_active_enodes()
 
     logger.debug("active nodes: \n{}".format("\n".join(active_enodes)))
 
@@ -106,10 +82,8 @@ async def create_airdrop() -> Airdrop:
         logger.info(f"{peer.enode} online percent is {online_percent}%")
 
         if online_percent >= config.reward_min_percent:
-            pub_key_bytes = Web3.toBytes(hexstr=enode)
-            pub_key = keys.PublicKey(pub_key_bytes)
-            address_checksum = pub_key.to_checksum_address()
-            amount = await count_reward_amount(peer, online_percent)
+            address_checksum = pubkey_to_address(enode)
+            amount = await count_reward_amount(float(peer.reward_interest), online_percent)
             await Reward.create(
                 airdrop=airdrop,
                 address=address_checksum,
@@ -142,19 +116,6 @@ async def check_waiting_airdrops():
 
     if airdrops:
         await airdrops[0].relay()
-
-
-async def count_reward_amount(peer: Peer, percent: int) -> int:
-    """
-    Convert reward from US dollars to reward currency
-    :param peer: rewarded peer
-    :param percent: percent Peer was online for pass day
-    :return: reward amount with decimals
-    """
-    interest = peer.reward_interest
-    rate = await get_rate(config.reward_currency)
-    amount = percent * interest * rate
-    return int(amount)
 
 
 async def get_rate(currency: str) -> int:
