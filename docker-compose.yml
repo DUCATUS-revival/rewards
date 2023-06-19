@@ -11,7 +11,7 @@ services:
       - .:/app
       - ./.docker/db/:/db/
     restart: unless-stopped
-    command: python rewards/main.py
+    command: python src/main.py
   web:
     build:
       context: .

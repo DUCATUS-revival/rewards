@@ -33,7 +33,7 @@ down:
 	sudo  $(compose) down
 
 init-aerich:
-	sudo $(compose) exec web aerich init -t rewards.settings.TORTOISE_ORM
+	sudo $(compose) exec web aerich init -t src.settings.TORTOISE_ORM
 
 init-db:
 	sudo $(compose) exec web aerich init-db

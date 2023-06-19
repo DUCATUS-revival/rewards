@@ -19,3 +19,7 @@ ignore =
     ANN003,
     ANN401,
     DJ01,
+per-file-ignores =
+    src/logging_conf/*:ANN204,N802,
+    src/settings.py:SIM115,
+    src/web.py:ANN201,

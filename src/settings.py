@@ -1,6 +1,5 @@
 import contextlib
 import glob
-import json
 import logging.config
 import os
 from dataclasses import dataclass, field
@@ -11,8 +10,9 @@ from eth_account import Account
 from marshmallow_dataclass import class_schema
 from web3 import HTTPProvider, Web3, contract
 
-from rewards.logger_config import logger_config
-from rewards.rates_api import RatesAPI
+from contracts import MULTISENDER_ABI
+from src.core.rates_api import RatesAPI
+from src.logging_conf.config import logger_config
 
 logging.config.dictConfig(logger_config)
 logging.getLogger("apscheduler.executors.default").propagate = False
@@ -26,7 +26,7 @@ POSTGRES_URL = "postgres://{user}:{password}@{hostname}:{port}/{db}".format(
     port=os.getenv("POSTGRES_PORT", 5432),
 )
 
-MODELS_MODULE = ["rewards.models", "aerich.models"]
+MODELS_MODULE = ["src.rewards.models", "aerich.models"]
 
 TORTOISE_ORM = {
     "connections": {
@@ -35,15 +35,6 @@ TORTOISE_ORM = {
     "apps": {
         "models": {"models": MODELS_MODULE, "default_connection": "default"},
     },
-}
-
-MULTISENDER_INITIAL_GAS = 100_000
-MULTISENDER_GAS_ADDITION_PER_ADDRESS = 40_000
-
-
-DECIMALS = {
-    "DUCX": 18,
-    "DUC": 8,
 }
 
 
@@ -70,7 +61,7 @@ class Config:
     default_usd_reward_amount: float
     api: RatesAPI = field(init=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         enodes_tmp = []
         with contextlib.ExitStack() as stack:
             for filename in glob.glob(os.path.join(self.enodes_dir, "*.txt")):
@@ -88,10 +79,6 @@ class Config:
         )
         self.address = Account.from_key(self.private_key).address
         self.api = RatesAPI(self.rates_url)
-
-
-with open("rewards/multisender_abi.json") as f:
-    MULTISENDER_ABI = json.load(f)
 
 
 with open(os.path.dirname(__file__) + "/../config.yaml") as f:

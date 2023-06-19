@@ -1,7 +1,9 @@
+from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
-from fastapi import FastAPI
-from rewards.settings import MODELS_MODULE, POSTGRES_URL
+
+from src.settings import MODELS_MODULE, POSTGRES_URL
+
 
 async def init_db(app: FastAPI = None) -> None:
     if app:

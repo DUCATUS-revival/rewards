@@ -1,10 +1,11 @@
 from typing import Set
+
 import requests
 from eth_keys import keys
+from requests.adapters import HTTPAdapter
 from web3 import Web3
 
-from rewards.settings import config
-from requests.adapters import HTTPAdapter
+from src.settings import config
 
 
 async def request_active_enodes() -> Set[str]:
@@ -32,7 +33,6 @@ async def request_active_enodes() -> Set[str]:
         for peer in peers:
             if peer["protocols"]["eth"]:
                 active_enodes.add(peer["id"])
-
 
     session.close()
     return active_enodes
