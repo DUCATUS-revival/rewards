@@ -17,6 +17,7 @@ class AirdropError(Exception):
 
 
 async def ping_nodes() -> None:
+    logger.info("try ping nodes")
     active_enodes = await request_active_enodes()
 
     logger.debug("active nodes: \n{}".format("\n".join(active_enodes)))
@@ -50,7 +51,8 @@ async def ping_nodes() -> None:
 async def send_rewards() -> None:
     try:
         airdrop = await create_airdrop()
-    except AirdropError:
+    except AirdropError as e:
+        logger.info(f"Exception create airdrop {e}")
         return
 
     await airdrop.relay()
