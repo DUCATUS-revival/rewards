@@ -11,3 +11,4 @@ enodes/
 .idea/
 migrations/
 pyproject.toml
+db-dump*
