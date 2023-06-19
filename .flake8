@@ -1,6 +1,6 @@
 [flake8]
-exclude = .git, .docker, __pycache__, venv
-ignore = 
+exclude = .git, __pycache__, apps.py, test*, *test.py, *migrations/*
+ignore =
     E251,
     E501,
     E402,
@@ -11,3 +11,11 @@ ignore =
     E128,
     E122,
     E126,
+    C408,
+    SIM105,
+    ANN101,
+    ANN102,
+    ANN002,
+    ANN003,
+    ANN401,
+    DJ01,

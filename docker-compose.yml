@@ -22,6 +22,8 @@ services:
       - .:/app
       - ./.docker/db/:/db/
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:${DOCKER_EXPOSE_PORT?8000}:8000"
   db:
     image: postgres:14.1
     env_file: .env

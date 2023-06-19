@@ -1,4 +1,4 @@
-aerich==0.6.3
+aerich==0.7.1
 aiohttp==3.8.1
 aiosignal==1.2.0
 aiosqlite==0.17.0

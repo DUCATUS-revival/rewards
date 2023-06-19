@@ -16,7 +16,7 @@ invalid_input_response = JSONResponse(
 )
 
 @router.post(
-    '/status/{pubkey_or_address',
+    '/status/{pubkey_or_address}',
     response_model=PeerStatus,
     description="get status of machine by public key or address"
 )

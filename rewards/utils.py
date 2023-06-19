@@ -33,6 +33,8 @@ async def request_active_enodes() -> Set[str]:
             if peer["protocols"]["eth"]:
                 active_enodes.add(peer["id"])
 
+
+    session.close()
     return active_enodes
 
 

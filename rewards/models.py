@@ -137,9 +137,10 @@ class Peer(Model):
     enode = fields.CharField(pk=True, max_length=128)
     healthchecks = fields.ReverseRelation["Healthcheck"]
     reward_interest = fields.DecimalField(default=1, decimal_places=18, max_digits=255)
+    pubkey_address = fields.CharField(max_length=128, null=True, default=None)
 
     @property
-    def address(self) -> str:
+    def peer_address(self) -> str:
         return pubkey_to_address(self.enode)
 
     async def get_current_online_status(self):

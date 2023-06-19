@@ -1,20 +1,50 @@
-up: 
-	sudo docker-compose up --build -d
+compose := docker-compose
+lines := 1000
+
+pre-commit:
+	pip install pre-commit --upgrade
+	pre-commit install
+
+build:
+	sudo  $(compose) up --build -d
+
+main-build: 
+	sudo  $(compose) up --build -d main
+
+main-logs:
+	sudo  $(compose) logs -f --tail $(lines) main
 
 web-build:
-	sudo docker-compose up --build -d web
+	sudo  $(compose) up --build -d web
 
 web-logs:
-	sudo docker-compose logs -f web
-
-stop: 
-	sudo docker-compose stop
+	sudo  $(compose) logs -f --tail $(lines) web
 
 logs: 
-	sudo docker-compose logs -f main
+	sudo  $(compose) logs -f --tail $(lines)
 
-logs-db: 
-	sudo docker-compose logs -f db
+db-logs:
+	sudo  $(compose) logs -f --tail $(lines) db
 
 shell: 
-	sudo docker-compose exec main tortoise-cli shell
+	sudo  $(compose) exec web tortoise-cli shell
+
+down: 
+	sudo  $(compose) down
+
+init-aerich:
+	sudo $(compose) exec web aerich init -t rewards.settings.TORTOISE_ORM
+
+init-db:
+	sudo $(compose) exec web aerich init-db
+
+migrate-db:
+	sudo $(compose) exec web aerich migrate
+
+upgrade-db:
+	sudo $(compose) exec web aerich upgrade
+
+downgrade-db:
+	sudo $(compose) exec web aerich downgrade
+
+full-migrate: migrate-db upgrade-db

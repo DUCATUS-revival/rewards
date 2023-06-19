@@ -7,3 +7,7 @@ mnemonics*
 keys*
 pubkeys*
 privkeys*
+enodes/
+.idea/
+migrations/
+pyproject.toml

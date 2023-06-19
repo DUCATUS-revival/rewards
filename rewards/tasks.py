@@ -47,8 +47,6 @@ async def ping_nodes() -> None:
         healthcheck.total_counter += 1
         await healthcheck.save()
 
-    session.close()
-
 
 async def send_rewards() -> None:
     try:
