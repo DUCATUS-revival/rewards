@@ -7,19 +7,15 @@ from tortoise import Tortoise
 
 sys.path.append(os.path.abspath(os.path.join(__file__, *[os.pardir] * 2)))
 
-from rewards.settings import MODELS_MODULE, POSTGRES_URL, config
-from rewards.tasks import (
+from src.core.db import init_db
+from src.rewards.tasks import (
     check_pending_airdrops,
     check_waiting_airdrops,
     ping_nodes,
     send_rewards,
+    update_peer_addresses,
 )
-
-
-async def init_db():
-    await Tortoise.init(db_url=POSTGRES_URL, modules={"models": MODELS_MODULE})
-    await Tortoise.generate_schemas()
-
+from src.settings import config
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
@@ -31,6 +27,7 @@ if __name__ == "__main__":
         )
         scheduler.add_job(check_waiting_airdrops, "interval", minutes=1)
         scheduler.add_job(check_pending_airdrops, "interval", seconds=5)
+        scheduler.add_job(update_peer_addresses, "interval", minutes=1)
         scheduler.add_job(
             send_rewards,
             "cron",

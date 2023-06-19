@@ -1,4 +1,4 @@
-aerich==0.6.3
+aerich==0.7.1
 aiohttp==3.8.1
 aiosignal==1.2.0
 aiosqlite==0.17.0
@@ -33,7 +33,6 @@ hdwallet==2.0.1
 hexbytes==0.2.2
 identify==2.5.3
 idna==3.3
-ipfshttpclient==0.8.0a2
 iso8601==0.1.16
 jedi==0.18.1
 jsonschema==3.2.0
@@ -51,10 +50,9 @@ parso==0.8.2
 pathspec==0.9.0
 platformdirs==2.5.2
 pre-commit==2.20.0
-prompt-toolkit==3.0.22
 protobuf==3.19.1
 psutil==5.9.1
-ptpython==3.0.20
+ptpython==3.0.23
 pycryptodome==3.11.0
 pydantic==1.9.2
 Pygments==2.10.0
@@ -85,3 +83,5 @@ wcwidth==0.2.5
 web3 @ git+https://github.com/Rock-n-Block/web3.py.git@80dd4f00cd7274b576ee0e09364ed47a4de09ea9
 websockets==10.1
 yarl==1.7.2
+fastapi==0.97.0
+uvicorn==0.22.0
