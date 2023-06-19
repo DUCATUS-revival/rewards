@@ -85,3 +85,5 @@ wcwidth==0.2.5
 web3 @ git+https://github.com/Rock-n-Block/web3.py.git@80dd4f00cd7274b576ee0e09364ed47a4de09ea9
 websockets==10.1
 yarl==1.7.2
+fastapi==0.97.0
+uvicorn==0.22.0

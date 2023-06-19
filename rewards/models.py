@@ -12,8 +12,11 @@ from rewards.settings import (
     MULTISENDER_GAS_ADDITION_PER_ADDRESS,
     MULTISENDER_INITIAL_GAS,
     config,
+    DECIMALS
 )
-from rewards.utils import request_active_enodes, count_reward_amount, pubkey_to_address
+from rewards.utils import request_active_enodes, pubkey_to_address
+
+logger = logging.getLogger("models")
 
 
 class AirdropStatus(str, Enum):
@@ -161,7 +164,7 @@ class Peer(Model):
         if current_online_percent < config.reward_min_percent:
             return 0.0
 
-        return count_reward_amount(float(self.reward_interest), current_online_percent)
+        return Rate.count_reward_amount(float(self.reward_interest), current_online_percent)
 
     async def get_status(self):
         return {
@@ -182,3 +185,34 @@ class Rate(Model):
     currency = fields.CharField(max_length=10)
     usd_rate = fields.DecimalField(decimal_places=8, max_digits=255, default=1)
     decimals = fields.IntField(default=0)
+
+    @classmethod
+    async def get_rate(cls, reward_currency: str):
+        """
+        Get rate for reward currency from API or from DB
+        :param reward_currency: reward currency
+        :return: amount for 1 US dollar in reward currency with decimals
+        """
+        try:
+            rates = await config.api.rates
+            for i_currency in rates:
+                decimals = DECIMALS.get(i_currency, 0)
+                rate, _ = await Rate.get_or_create(currency=i_currency, decimals=decimals)
+                rate.usd_rate = rates.get(i_currency).get("USD")
+                await rate.save()
+        except Exception as err:
+            logger.warning("Cant get rates from API cause {err}".format(err=err))
+        rate = await Rate.get(currency=reward_currency)
+        return int(10 ** rate.decimals / rate.usd_rate)
+
+    @classmethod
+    async def count_reward_amount(cls, reward_interest: float, percent: int) -> int:
+        """
+        Convert reward from US dollars to reward currency
+        :param reward_interest: reward interest of peer
+        :param percent: percent Peer was online for pass day
+        :return: reward amount with decimals
+        """
+        rate = await cls.get_rate(config.reward_currency)
+        amount = percent * reward_interest * rate
+        return int(amount)

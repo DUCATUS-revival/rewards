@@ -1,6 +1,12 @@
 up: 
 	sudo docker-compose up --build -d
 
+web-build:
+	sudo docker-compose up --build -d web
+
+web-logs:
+	sudo docker-compose logs -f web
+
 stop: 
 	sudo docker-compose stop
 

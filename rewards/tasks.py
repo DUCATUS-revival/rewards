@@ -8,7 +8,7 @@ from eth_keys import keys
 
 from rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
 from rewards.settings import DECIMALS, config
-from rewards.utils import request_active_enodes, count_reward_amount, pubkey_to_address
+from rewards.utils import request_active_enodes, pubkey_to_address
 
 logger = logging.getLogger("tasks")
 
@@ -83,7 +83,7 @@ async def create_airdrop() -> Airdrop:
 
         if online_percent >= config.reward_min_percent:
             address_checksum = pubkey_to_address(enode)
-            amount = await count_reward_amount(float(peer.reward_interest), online_percent)
+            amount = await Rate.count_reward_amount(float(peer.reward_interest), online_percent)
             await Reward.create(
                 airdrop=airdrop,
                 address=address_checksum,
@@ -118,7 +118,7 @@ async def check_waiting_airdrops():
         await airdrops[0].relay()
 
 
-async def get_rate(currency: str) -> int:
+async def get_and_update_rate(currency: str) -> int:
     """
     Get rate for reward currency from API or from DB
     :param currency: reward currency

@@ -12,6 +12,16 @@ services:
       - ./.docker/db/:/db/
     restart: unless-stopped
     command: python rewards/main.py
+  web:
+    build:
+      context: .
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - ./.docker/db/:/db/
+    restart: unless-stopped
   db:
     image: postgres:14.1
     env_file: .env

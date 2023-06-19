@@ -10,3 +10,5 @@ RUN pip install -r requirements.txt
 ENV TORTOISE_ORM=rewards.settings.TORTOISE_ORM
 
 COPY . /app
+
+CMD ["uvicorn", "rewards.web:web", "--host", "0.0.0.0"]

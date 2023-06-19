@@ -6,8 +6,6 @@ from web3 import Web3
 from rewards.settings import config
 from requests.adapters import HTTPAdapter
 
-from rewards.tasks import get_rate
-
 
 async def request_active_enodes() -> Set[str]:
     payload = {
@@ -37,17 +35,6 @@ async def request_active_enodes() -> Set[str]:
 
     return active_enodes
 
-
-async def count_reward_amount(reward_interest: float, percent: int) -> int:
-    """
-    Convert reward from US dollars to reward currency
-    :param reward_interest: reward interest of peer
-    :param percent: percent Peer was online for pass day
-    :return: reward amount with decimals
-    """
-    rate = await get_rate(config.reward_currency)
-    amount = percent * reward_interest * rate
-    return int(amount)
 
 def pubkey_to_address(pubkey: str) -> str:
     pub_key_bytes = Web3.toBytes(hexstr=pubkey)
