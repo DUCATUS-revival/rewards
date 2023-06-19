@@ -126,11 +126,9 @@ async def check_waiting_airdrops() -> None:
         await airdrops[0].relay()
 
 
-async def get_and_update_rate(currency: str) -> int:
+async def update_rates() -> None:
     """
-    Get rate for reward currency from API or from DB
-    :param currency: reward currency
-    :return: amount for 1 US dollar in reward currency with decimals
+    Get rate for reward currency from API and save to DB
     """
     try:
         rates = await config.api.rates
@@ -141,8 +139,6 @@ async def get_and_update_rate(currency: str) -> int:
             await rate.save()
     except Exception as err:
         logger.warning("Cant get rates from API cause {err}".format(err=err))
-    rate = await Rate.get(currency=currency)
-    return int(10**rate.decimals / rate.usd_rate)
 
 
 async def update_peer_addresses() -> None:

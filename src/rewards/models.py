@@ -1,19 +1,17 @@
 import logging
+from datetime import timedelta
 from enum import Enum
+from typing import Optional
 
-from tortoise import fields
-from tortoise.models import Model, QuerySet
+from tortoise import fields, timezone
+from tortoise.models import Model
 from tortoise.transactions import atomic
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 
-from src.consts import (
-    DECIMALS,
-    MULTISENDER_GAS_ADDITION_PER_ADDRESS,
-    MULTISENDER_INITIAL_GAS,
-)
+from src.consts import MULTISENDER_GAS_ADDITION_PER_ADDRESS, MULTISENDER_INITIAL_GAS
 from src.settings import config
-from src.utils import pubkey_to_address, request_active_enodes
+from src.utils import pubkey_to_address
 
 logger = logging.getLogger("src.rewards.models")
 
@@ -151,18 +149,27 @@ class Peer(Model):
     def peer_address(self) -> str:
         return pubkey_to_address(self.enode)
 
-    async def get_current_online_status(self) -> bool:
-        active_enodes = await request_active_enodes()
-        if self.enode in active_enodes:
-            return True
-
-        return False
-
-    async def get_latest_healthcheck(self) -> QuerySet["Healthcheck"]:
+    async def get_latest_healthcheck(self) -> Optional["Healthcheck"]:
         return await self.healthchecks.order_by("-timestamp").first()
 
-    async def get_current_online_percent(self) -> float:
-        latest_healthcheck = await self.get_latest_healthcheck()
+    async def get_current_online_status(
+        self, latest_healthcheck: Optional["Healthcheck"] = None
+    ) -> bool:
+        if not latest_healthcheck:
+            latest_healthcheck = await self.get_latest_healthcheck()
+
+        check_time = timezone.now() - timedelta(minutes=5)
+        if latest_healthcheck.updated_at < check_time:
+            return False
+
+        return True
+
+    async def get_current_online_percent(
+        self, latest_healthcheck: Optional["Healthcheck"] = None
+    ) -> float:
+        if not latest_healthcheck:
+            latest_healthcheck = await self.get_latest_healthcheck()
+
         if not latest_healthcheck:
             return 0.0
 
@@ -171,20 +178,29 @@ class Peer(Model):
             2,
         )
 
-    async def get_today_expected_rewards(self) -> str:
-        current_online_percent = await self.get_current_online_percent()
+    async def get_today_expected_rewards(
+        self, current_online_percent: Optional[float] = None
+    ) -> str:
+        if not current_online_percent:
+            current_online_percent = await self.get_current_online_percent()
+
         if current_online_percent < config.reward_min_percent:
-            return 0.0
+            return str(int(0))
         reward_amount = await Rate.count_reward_amount(
             float(self.reward_interest), current_online_percent
         )
         return str(int(reward_amount))
 
     async def get_status(self) -> dict:
+        latest_healthcheck = await self.get_latest_healthcheck()
+        online_status = await self.get_current_online_status(latest_healthcheck)
+        online_percent = await self.get_current_online_percent(latest_healthcheck)
+        expected_rewards = await self.get_today_expected_rewards(online_percent)
+
         return {
-            "online_status": await self.get_current_online_status(),
-            "online_percent": await self.get_current_online_percent(),
-            "expected_rewards": await self.get_today_expected_rewards(),
+            "online_status": online_status,
+            "online_percent": online_percent,
+            "expected_rewards": expected_rewards,
         }
 
 
@@ -194,6 +210,8 @@ class Healthcheck(Model):
     online_counter = fields.IntField(default=0)
     total_counter = fields.IntField(default=0)
 
+    updated_at = fields.DatetimeField(auto_now=True)
+
     def __str__(self) -> str:
         return f"{self.timestamp} - {self.online_counter} / {self.total_counter}"
 
@@ -202,6 +220,8 @@ class Rate(Model):
     currency = fields.CharField(max_length=10)
     usd_rate = fields.DecimalField(decimal_places=8, max_digits=255, default=1)
     decimals = fields.IntField(default=0)
+
+    updated_at = fields.DatetimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.currency} - {self.usd_rate} ({self.decimals} decimals)"
@@ -213,17 +233,6 @@ class Rate(Model):
         :param reward_currency: reward currency
         :return: amount for 1 US dollar in reward currency with decimals
         """
-        try:
-            rates = await config.api.rates
-            for i_currency in rates:
-                decimals = DECIMALS.get(i_currency, 0)
-                rate, _ = await Rate.get_or_create(
-                    currency=i_currency, decimals=decimals
-                )
-                rate.usd_rate = rates.get(i_currency).get("USD")
-                await rate.save()
-        except Exception as err:
-            logger.warning("Cant get rates from API cause {err}".format(err=err))
         rate = await Rate.get(currency=reward_currency)
         return int(10**rate.decimals / rate.usd_rate)
 

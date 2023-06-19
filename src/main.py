@@ -14,6 +14,7 @@ from src.rewards.tasks import (
     ping_nodes,
     send_rewards,
     update_peer_addresses,
+    update_rates,
 )
 from src.settings import config
 
@@ -28,6 +29,7 @@ if __name__ == "__main__":
         scheduler.add_job(check_waiting_airdrops, "interval", minutes=1)
         scheduler.add_job(check_pending_airdrops, "interval", seconds=5)
         scheduler.add_job(update_peer_addresses, "interval", minutes=1)
+        scheduler.add_job(update_rates, "interval", minutes=1)
         scheduler.add_job(
             send_rewards,
             "cron",
