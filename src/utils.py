@@ -49,6 +49,8 @@ def pubkey_to_address(pubkey: str) -> str:
 
 
 def valid_enode(enode: str) -> bool:
+    if enode == "":
+        return False
     try:
         _ = pubkey_to_address(enode)
         return True
