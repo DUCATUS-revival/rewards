@@ -4,7 +4,7 @@ aiosignal==1.2.0
 aiosqlite==0.17.0
 appdirs==1.4.4
 APScheduler==3.8.1
-async-timeout==4.0.1
+async-timeout==4.0.2
 asyncpg==0.25.0
 attrs==21.2.0
 base58==2.1.1

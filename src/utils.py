@@ -61,7 +61,7 @@ def valid_enode(enode: str) -> bool:
         return False
 
 
-def get_redis_online_peers() -> list:
+async def get_redis_online_peers() -> list:
     active_enodes = RedisClient().get("online_peers")
     if not active_enodes:
         active_enodes = await request_active_enodes()

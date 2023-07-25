@@ -154,11 +154,11 @@ class Peer(Model):
     async def get_current_online_status(
         self, latest_healthcheck: Optional["Healthcheck"] = None
     ) -> bool:
-        active_enodes = get_redis_online_peers()
+        active_enodes = await get_redis_online_peers()
         if self.enode in active_enodes:
             return True
 
-        return True
+        return False
 
     async def get_current_online_percent(
         self, latest_healthcheck: Optional["Healthcheck"] = None
