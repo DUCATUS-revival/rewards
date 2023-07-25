@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import timedelta
 
@@ -5,6 +6,7 @@ from tortoise import timezone
 from tortoise.transactions import atomic
 
 from src.consts import DECIMALS
+from src.redis_utils import RedisClient
 from src.rewards.models import Airdrop, AirdropStatus, Healthcheck, Peer, Rate, Reward
 from src.settings import config
 from src.utils import pubkey_to_address, request_active_enodes, valid_enode
@@ -19,6 +21,7 @@ class AirdropError(Exception):
 async def ping_nodes() -> None:
     logger.info("try ping nodes")
     active_enodes = await request_active_enodes()
+    RedisClient().set("online_peers", json.dumps(list(active_enodes)), 5 * 60)
 
     logger.debug("active nodes: \n{}".format("\n".join(active_enodes)))
 

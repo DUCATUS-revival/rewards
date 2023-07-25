@@ -1,9 +1,8 @@
 import logging
-from datetime import timedelta
 from enum import Enum
 from typing import Optional
 
-from tortoise import fields, timezone
+from tortoise import fields
 from tortoise.models import Model
 from tortoise.transactions import atomic
 from web3 import Web3
@@ -11,7 +10,7 @@ from web3.exceptions import TransactionNotFound
 
 from src.consts import MULTISENDER_GAS_ADDITION_PER_ADDRESS, MULTISENDER_INITIAL_GAS
 from src.settings import config
-from src.utils import pubkey_to_address
+from src.utils import get_redis_online_peers, pubkey_to_address
 
 logger = logging.getLogger("src.rewards.models")
 
@@ -155,12 +154,9 @@ class Peer(Model):
     async def get_current_online_status(
         self, latest_healthcheck: Optional["Healthcheck"] = None
     ) -> bool:
-        if not latest_healthcheck:
-            latest_healthcheck = await self.get_latest_healthcheck()
-
-        check_time = timezone.now() - timedelta(minutes=5)
-        if latest_healthcheck.updated_at < check_time:
-            return False
+        active_enodes = get_redis_online_peers()
+        if self.enode in active_enodes:
+            return True
 
         return True
 

@@ -30,3 +30,8 @@ services:
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
+  redis:
+    image: redis:7.0
+    restart: unless-stopped
+    volumes:
+      - ./.docker/redis-data:/data

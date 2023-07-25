@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Set
 
@@ -7,6 +8,7 @@ from eth_utils.exceptions import ValidationError as EthUtilsValidationError
 from requests.adapters import HTTPAdapter
 from web3 import Web3
 
+from src.redis_utils import RedisClient
 from src.settings import config
 
 logger = logging.getLogger("src.utils")
@@ -57,3 +59,14 @@ def valid_enode(enode: str) -> bool:
     except EthUtilsValidationError:
         logging.warning(f"enode {enode} not valid, remove it from files and DB")
         return False
+
+
+def get_redis_online_peers() -> list:
+    active_enodes = RedisClient().get("online_peers")
+    if not active_enodes:
+        active_enodes = await request_active_enodes()
+        active_enodes = json.dumps(list(active_enodes))
+        RedisClient().set("online_peers", active_enodes, 5 * 60)
+
+    active_enodes = json.loads(active_enodes)
+    return active_enodes
