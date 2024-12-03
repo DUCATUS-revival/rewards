@@ -43,6 +43,7 @@ class Config:
     json_rpc_urls: List[str]
     enodes: Set[str]
     multisender_contract_address: str
+    erc_20_contract_address: str
     gas_price_wei: int
     private_key: str
     reward_currency: str
