@@ -106,12 +106,15 @@ class Airdrop(Model):
             "nonce": nonce,
             "gasPrice": gas_price,
             "gas": gas_limit,
-            "value": total_amount,
         }
         logging.info(
             f"ready to send rewards addresses={addresses} amounts={amounts} with tx params {tx_params}"
         )
-        func = config.multisender_contract.functions.multisendETH(addresses, amounts)
+        func = config.multisender_contract.functions.multisendToken(
+            config.erc_20_contract_address,
+            addresses,
+            amounts
+        )
         initial_tx = func.buildTransaction(tx_params)
         signed_tx = config.w3.eth.account.sign_transaction(
             initial_tx, config.private_key
